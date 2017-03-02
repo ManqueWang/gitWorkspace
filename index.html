@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>捕鱼达人</title>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        body {
+            background: black;
+        }
+
+        #canvas {
+            background-image: url(Images/bg.jpg);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+
+        .black_overlay {
+            display: none;
+            position: absolute;
+            top: 0%;
+            left: 0%;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            z-index: 1001;
+            -moz-opacity: 0.8;
+            opacity: .80;
+            filter: alpha(opacity=80);
+        }
+
+        .white_content {
+            display: none;
+            position: absolute;
+            top: 18%;
+            left: 30%;
+            width: 405px;
+            height: 405px;
+            background-color: white;
+            z-index: 1002; /* 数字的大小指明了div的相对层，数字大的在上层 */
+            overflow: auto;
+        }
+    </style>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+</head>
+<body>
+
+<div>
+    <canvas id="canvas" width="900" height="800">
+        您的浏览器太low了！
+    </canvas>
+    <input type="button" id="btn" value="ssss" style="font-size: 16px;width:100%;height:50px"/>
+</div>
+
+<div id="game_over" class="white_content">
+    <img width="400px" height="400px" src='Images/bg0.png' onclick="re_start()"/></img>
+</div>
+<div id="fade" class="black_overlay"></div>
+
+<script type="text/javascript">
+
+//总时间
+var countdown = 5;
+//倒计时 文本信息
+var ifm = document.getElementById("btn");
+ifm.value = "TIME(" + countdown + ")";
+
+//判断游戏时间是否结束
+function ss() {
+    if (countdown == 0) {
+        /*alert("游戏时间到！GAME OVER");*/
+        //游戏时间结束，弹出GameOver图片
+        document.getElementById('game_over').style.display = 'block';
+        document.getElementById('fade').style.display = 'block';
+    } else {
+        countdown--;
+        ifm.value = "TIME  (" + countdown + ")  ";
+        setTimeout(function () {
+            ss();
+        }, 1000)
+    }
+}
+
+/*点击GameOver图片后重新开始*/
+function re_start() {
+    document.getElementById('game_over').style.display = 'none';
+    document.getElementById('fade').style.display = 'none';
+    window.location.reload();
+}
+
+function loadImg(arr, fn) {
+    var result = {};
+    var iNow = 0;
+    for (var i = 0; i < arr.length; i++) {
+        var oImage = new Image();
+        var tmp = arr[i].split('.');
+        result[tmp[0]] = oImage;
+        oImage.onload = function () {    //图片加载完成后立即执行
+            iNow++;
+            if (iNow >= arr.length) {
+                fn(result);
+            }
+        }
+        oImage.src = 'Images/' + arr[i];
+    }
+}
+
+//页面加载完成后立即执行该方法
+window.onload = function () {
+
+    var oCans = document.getElementById('canvas');
+    //获取宽高
+    var curW = document.documentElement.clientWidth || document.body.clientWidth;
+    var curH = document.documentElement.clientHeight || document.body.clientHeight;
+    var intger = '000000';
+    var intgerArr = getInteger(0);
+    var i = 0;
+
+    oCans.width = curW - 10;
+    oCans.height = curH - 10;
+    var oGc = oCans.getContext('2d');
+    loadImg(['pig.png', 'gun.png', 'zidan.png', 'gold.png', 'fish1.png', 'fish1_1.png', 'fish2.png', 'fish2_1.png', 'fish3.png', 'fish3_1.png', 'integer.png', 'bottom.jpg', 'lick_bg.png', 'lick_content.png','lick_middle.jpg','lick_sAndE.png'], function (result) {
+        //炮的运动
+        oGc.drawImage(result['gun'], 0, 0, 64, 64, oCans.offsetWidth / 2 - 32, oCans.offsetHeight - 70, 64, 64);   //炮画图
+        var gun = {};
+        var pig = {};
+        var goldArr = [];
+        var goldRun = [];
+        var zidanArr = [];
+        var bottomL = intgerArr.length * 80;
+        gun.x = oCans.offsetWidth / 2;
+        gun.y = oCans.offsetHeight - 70;
+        pig.arcX = result['pig'].width / 2;
+        pig.arcY = (oCans.offsetHeight - result['pig'].height / 2);
+        pig.curPoy = 0.5;
+        oCans.onmouseover = function () {
+            this.onmousemove = function (ev) {
+
+                var oEvent = ev || event;
+                var iMx = oEvent.layerX;
+                var iMy = oEvent.layerY;
+                gun.hudu = -(Math.atan2(iMx - gun.x, iMy - gun.y) + 180 * Math.PI / 180);
+                //炮
+                oGc.save();
+                oGc.translate(gun.x, gun.y + 32);//设置原点
+                oGc.rotate(gun.hudu);
+                oGc.drawImage(result['gun'], 0, 0, 64, 64, -32, -32, 64, 64);
+                oGc.restore();
+            }
+            this.onmousedown = function (ev) {
+                var oEvent = ev || event;
+                var iCx = oEvent.layerX;
+                var iCy = oEvent.layerY;
+                zidanArr.push(
+                        {
+                            x: gun.x,
+                            y: gun.y,
+                            startX: iCx,
+                            startY: iCy,
+                            iRatio: 0,
+                            hudu: gun.hudu,
+                            curPoy: 1
+                        }
+                );
+            }
+        }
+        //画
+        setInterval(function () {
+            oGc.clearRect(0, 0, oCans.offsetWidth, oCans.offsetHeight);
+
+//	 			document.title = zidanArr.length+'/'+fashArr.length+'/'+goldArr.length+'/'+goldRun.length;
+            oGc.drawImage
+
+            //进度条背景图
+            var x0 = oCans.offsetWidth  - 398;
+            var y0 = 12;
+            oGc.drawImage(result['lick_bg'],oCans.offsetWidth  - 400,10, 377, 40);
+            oGc.drawImage(result['lick_sAndE'],0,0,7,38,oCans.offsetWidth  - 398,12,10, 42);
+            for(var j = 1;j<=countdown;j++){
+                oGc.drawImage(result['lick_middle'],oCans.offsetWidth  - 398,12,10, 42);
+            }
+
+            /*oGc.drawImage(result['lick_content'],oCans.offsetWidth -366/5*countdown,0,366/5*countdown,40,oCans.offsetWidth -366/5*countdown,11,7,40);*/
+            //子弹
+            for (i = 0; i < zidanArr.length; i++) {
+
+                var theY = Math.floor(24 - Math.cos(zidanArr[i].hudu) * 24 - 10);
+                var theX = Math.ceil(Math.sin(zidanArr[i].hudu) * 24);
+                var arcX = zidanArr[i].x + theX;
+                var arcY = zidanArr[i].y + theY;
+                zidanArr[i].iRatio = (zidanArr[i].startX - arcX) / (zidanArr[i].startY - arcY);
+
+                oGc.save();
+                oGc.translate(arcX, arcY);//设置原点
+                oGc.rotate(zidanArr[i].hudu);
+                oGc.drawImage(result['zidan'], 0, parseInt(zidanArr[i].curPoy) * 48, 30, 48, theX - 15, theY - 24, 30, 48);
+                oGc.restore();
+
+                zidanArr[i].y -= 6;
+                zidanArr[i].x -= 6 * zidanArr[i].iRatio.toFixed(2);
+                zidanArr[i].curPoy += 0.3;
+                if (zidanArr[i].curPoy > 3) {
+                    zidanArr[i].curPoy = 0;
+                }
+                if (zidanArr[i].x <= 0 || zidanArr[i].x >= oCans.offsetWidth || zidanArr[i].y <= 0 || zidanArr[i].y >= oCans.offsetHeight) {
+                    zidanArr.splice(i, 1);
+                    i--;
+                }
+            }
+
+            //炮
+            oGc.save();
+            oGc.translate(gun.x, gun.y + 32);//设置原点
+            oGc.rotate(gun.hudu);
+            oGc.drawImage(result['gun'], 0, 0, 64, 64, -32, -32, 64, 64);
+            oGc.restore();
+            //鱼
+            for (i = 0; i < fashArr.length; i++) {
+
+                var speedX = 2;
+
+                if (fashArr[i].type == 1) {
+                    speedX = -2;
+                }
+                var speedY = parseFloat(speedX * Math.tan(fashArr[i].hudu));
+                fashArr[i].x = fashArr[i].x + speedX;
+                fashArr[i].y = fashArr[i].y + speedY;
+
+                oGc.save();
+                oGc.translate(fashArr[i].x, fashArr[i].y);
+                oGc.rotate(fashArr[i].hudu);
+                oGc.drawImage(result[fashArr[i].name], 0, parseInt(fashArr[i].curPoy) * fashArr[i].h, fashArr[i].w, fashArr[i].h, speedX, speedY, fashArr[i].w, fashArr[i].h);
+                oGc.restore();
+                fashArr[i].curPoy += fashArr[i].step;
+                if (fashArr[i].curPoy > fashArr[i].endPoy) {
+                    fashArr[i].curPoy = 0;
+                }
+                if (fashArr[i].type == 0 && fashArr[i].x > oCans.offsetWidth) {
+                    fashArr.splice(i, 1);
+                    i--;
+                } else if (fashArr[i].x < -fashArr[i].w) {
+                    fashArr.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // 底边
+            oGc.drawImage(result['bottom'], 0, 0, result['bottom'].width, result['bottom'].height, bottomL, 0, (intgerArr.length - 1) * result['integer'].height / 10, result['integer'].height / 10 + 5);
+
+            //打中
+            for (i = 0; i < zidanArr.length; i++) {
+                for (var n = 0; n < fashArr.length; n++) {
+
+                    if (collideTest(zidanArr[i].x, zidanArr[i].y, 30, 46, fashArr[n].x, fashArr[n].y, fashArr[n].w, fashArr[n].h)) {
+
+                        var goldTmp = {
+                            x: fashArr[n].x,
+                            y: fashArr[n].y,
+                            curPoy: 0
+                        };
+                        intgerArr = getInteger(fashArr[n].intger);//设置积分
+                        goldArr.push(goldTmp);
+                        fashArr.splice(n, 1);
+                        zidanArr.splice(i, 1);
+                        i--;
+                        break;
+                    }
+                }
+            }
+
+            //金币
+            for (i = 0; i < goldArr.length; i++) {
+                oGc.drawImage(result['gold'], 0, parseInt(goldArr[i].curPoy) * 51, 49, 51, goldArr[i].x, goldArr[i].y, 49, 51);
+                if (goldArr[i].curPoy >= 5) {
+                    goldRun.push({
+                        curX: goldArr[i].x,
+                        curY: goldArr[i].y
+                    });
+                    goldArr.splice(i, 1);
+                } else {
+                    goldArr[i].curPoy += 0.5;
+                }
+            }
+
+            //金币运动
+
+            if (pig.curPoy > 0.5) {
+                pig.curPoy -= 0.08;
+            } else {
+                pig.curPoy = 0;
+            }
+
+            for (i = 0; i < goldRun.length; i++) {
+                oGc.drawImage(result['gold'], 0, 0, 49, 51, goldRun[i].curX, goldRun[i].curY, 49, 51);
+                var speedX = parseInt((pig.arcX - goldRun[i].curX) * 0.2);
+                var speedY = parseInt((pig.arcY - 20 - goldRun[i].curY) * 0.2);
+                goldRun[i].curX += speedX;
+                goldRun[i].curY += speedY;
+                if (speedX == 0) {
+                    goldRun.splice(i, 1);
+                    i--;
+                    pig.curPoy = 1;
+                }
+            }
+
+            //pig
+            oGc.drawImage(result['pig'], 0, Math.round(pig.curPoy) * 90, 90, 90, 0, oCans.offsetHeight - 130, 130, 130);
+
+            //积分
+            for (i = 0; i < intgerArr.length; i++) {
+                oGc.drawImage(result['integer'], 0, intgerArr[i].old, result['integer'].width, result['integer'].height / 10, bottomL + (i * result['integer'].width), 5, result['integer'].width, result['integer'].height / 10);
+                var intSpeed = (intgerArr[i].number - intgerArr[i].old) / 8;
+                intSpeed = intSpeed > 0 ? Math.ceil(intSpeed) : Math.floor(intSpeed);
+                intgerArr[i].old += intSpeed;
+            }
+
+        }, 1000 / 60);
+
+        ss(); //计算游戏时间
+
+    });
+    var fashArr = [];
+    var arr = [
+        {
+            name: 'fish1',
+            endPoy: 12,
+            step: 0.1,
+            w: 80,
+            h: 80,
+            intger: 2
+        },
+        {
+            name: 'fish2',
+            endPoy: 8,
+            step: 0.1,
+            w: 60,
+            h: 64,
+            intger: 3
+        },
+        {
+            name: 'fish3',
+            endPoy: 9,
+            step: 0.1,
+            w: 50,
+            h: 56,
+            intger: 1
+        }
+    ]
+    setInterval(function () {
+        var rand = Math.round(Math.random() * (arr.length - 1));
+        var iType = Math.round(Math.random() * 1);
+        var tmp = {
+            x: -arr[rand].w,
+            y: oCans.offsetHeight / 2 - 150,
+            hudu: (Math.PI / 180) * (parseInt(Math.random() * 60 - 20)),
+            curPoy: 0,
+            step: arr[rand].step,
+            endPoy: arr[rand].endPoy,
+            name: arr[rand].name,
+            w: arr[rand].w,
+            h: arr[rand].h,
+            intger: arr[rand].intger,
+            type: 0
+        };
+        if (iType === 1) {
+
+            tmp.type = 1;
+            tmp.x = oCans.offsetWidth + tmp.w;
+            tmp.name = tmp.name + '_1';
+        }
+        fashArr.push(tmp);
+    }, 800);
+
+    //碰撞检测
+    function collideTest(x1, y1, w1, h1, x2, y2, w2, h2) {
+        var r1 = x1 + w1;
+        var b1 = y1 + h1;
+
+        var r2 = x2 + w2;
+        var b2 = y2 + h2;
+
+        if (x1 > r2 || r1 < x2 || b1 < y2 || y1 > b2) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function getInteger(num) {
+        var intgerArr = [];
+        for (var i = 0; i < String(intger).length; i++) {
+            intgerArr.push({
+                old: Number(String(intger)[i]) * 53,
+                curPoy: 0
+            });
+        }
+        intger = parseFloat(intger) + num;
+        for (i = String(intger).length; i < 6; i++) {
+            intger = '0' + intger;
+        }
+        for (i = 0; i < intgerArr.length; i++) {
+            intgerArr[i].number = Number(String(intger)[i]) * 53;
+        }
+        return intgerArr;
+    }
+}
+</script>
+</body>
+</html>
