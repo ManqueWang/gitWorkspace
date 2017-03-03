@@ -66,7 +66,7 @@
 <script type="text/javascript">
 
 //总时间
-var countdown = 5;
+var countdown = 60;
 //倒计时 文本信息
 var ifm = document.getElementById("btn");
 ifm.value = "TIME(" + countdown + ")";
@@ -125,7 +125,7 @@ window.onload = function () {
     oCans.width = curW - 10;
     oCans.height = curH - 10;
     var oGc = oCans.getContext('2d');
-    loadImg(['pig.png', 'gun.png', 'zidan.png', 'gold.png', 'fish1.png', 'fish1_1.png', 'fish2.png', 'fish2_1.png', 'fish3.png', 'fish3_1.png', 'integer.png', 'bottom.jpg', 'lick_bg.png', 'lick_content.png','lick_middle.jpg','lick_sAndE.png'], function (result) {
+    loadImg(['pig.png', 'gun.png', 'zidan.png', 'gold.png', 'fish1.png', 'fish1_1.png', 'fish2.png', 'fish2_1.png', 'fish3.png', 'fish3_1.png', 'integer.png', 'bottom.jpg', 'lick_bg.png', 'lick_content.png', 'lick_middle.jpg', 'lick_sAndE.png'], function (result) {
         //炮的运动
         oGc.drawImage(result['gun'], 0, 0, 64, 64, oCans.offsetWidth / 2 - 32, oCans.offsetHeight - 70, 64, 64);   //炮画图
         var gun = {};
@@ -178,13 +178,15 @@ window.onload = function () {
             oGc.drawImage
 
             //进度条背景图
-            var x0 = oCans.offsetWidth  - 398;
+            var x0 = oCans.offsetWidth - 398;
             var y0 = 12;
-            oGc.drawImage(result['lick_bg'],oCans.offsetWidth  - 400,10, 377, 40);
-            oGc.drawImage(result['lick_sAndE'],0,0,7,38,oCans.offsetWidth  - 398,12,10, 42);
-            for(var j = 1;j<=countdown;j++){
-                oGc.drawImage(result['lick_middle'],oCans.offsetWidth  - 398,12,10, 42);
+            var w0 = 377 / 60;
+            oGc.drawImage(result['lick_bg'], oCans.offsetWidth - 400, 10, 377, 40);
+            oGc.drawImage(result['lick_sAndE'], 0, 0, 7, 38, oCans.offsetWidth - 398, 12, w0, 42);
+            for (var j = 1; j < countdown; j++) {
+                oGc.drawImage(result['lick_middle'], x0 + j * w0, 12, w0, 36);
             }
+            oGc.drawImage(result['lick_sAndE'], 7, 0, 7, 38, x0 + countdown * w0, 12, w0, 42);
 
             /*oGc.drawImage(result['lick_content'],oCans.offsetWidth -366/5*countdown,0,366/5*countdown,40,oCans.offsetWidth -366/5*countdown,11,7,40);*/
             //子弹
