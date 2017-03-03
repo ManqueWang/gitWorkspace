@@ -28,7 +28,7 @@
             left: 0%;
             width: 100%;
             height: 100%;
-            background-color: #ffffff;
+            background-color: #f6fcff;
             z-index: 1001;
             -moz-opacity: 0.8;
             opacity: .80;
@@ -39,10 +39,9 @@
             display: none;
             position: absolute;
             top: 18%;
-            left: 30%;
-            width: 405px;
-            height: 405px;
-            background-color: white;
+            left: 35%;
+            width: 505px;
+            height: 505px;
             z-index: 1002; /* 数字的大小指明了div的相对层，数字大的在上层 */
             overflow: auto;
         }
@@ -59,7 +58,7 @@
 </div>
 
 <div id="game_over" class="white_content">
-    <img width="400px" height="400px" src='Images/bg0.png' onclick="re_start()"/></img>
+    <img src='Images/bg123.gif' onclick="re_start()"/></img>
 </div>
 <div id="fade" class="black_overlay"></div>
 
@@ -133,7 +132,7 @@ window.onload = function () {
         var goldArr = [];
         var goldRun = [];
         var zidanArr = [];
-        var bottomL = intgerArr.length * 80;
+        var bottomL = intgerArr.length * 80+120;
         gun.x = oCans.offsetWidth / 2;
         gun.y = oCans.offsetHeight - 70;
         pig.arcX = result['pig'].width / 2;
@@ -177,17 +176,18 @@ window.onload = function () {
 //	 			document.title = zidanArr.length+'/'+fashArr.length+'/'+goldArr.length+'/'+goldRun.length;
             oGc.drawImage
 
-            //进度条背景图
-            var x0 = oCans.offsetWidth - 398;
+            //进度条
+            var x0 = oCans.offsetWidth - 1398;
             var y0 = 12;
-            var w0 = 377 / 60;
-            oGc.drawImage(result['lick_bg'], oCans.offsetWidth - 400, 10, 377, 40);
-            oGc.drawImage(result['lick_sAndE'], 0, 0, 7, 38, oCans.offsetWidth - 398, 12, w0, 42);
-            for (var j = 1; j < countdown; j++) {
-                oGc.drawImage(result['lick_middle'], x0 + j * w0, 12, w0, 36);
+            var w0 = 373 / 60;
+            oGc.drawImage(result['lick_bg'], x0-2, y0-2, 377, 40);
+            if (countdown != 0) {
+                oGc.drawImage(result['lick_sAndE'], 0, 0, 7, 38, x0, y0, w0, 42);
+                for (var j =  1; j < countdown; j++) {
+                    oGc.drawImage(result['lick_middle'], x0 + j * w0, y0, w0, 36);
+                }
+                oGc.drawImage(result['lick_sAndE'], 7, 0, 7, 38, x0 + countdown * w0, y0, w0, 42);
             }
-            oGc.drawImage(result['lick_sAndE'], 7, 0, 7, 38, x0 + countdown * w0, 12, w0, 42);
-
             /*oGc.drawImage(result['lick_content'],oCans.offsetWidth -366/5*countdown,0,366/5*countdown,40,oCans.offsetWidth -366/5*countdown,11,7,40);*/
             //子弹
             for (i = 0; i < zidanArr.length; i++) {
